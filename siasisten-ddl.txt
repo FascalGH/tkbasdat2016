@@ -1,0 +1,131 @@
+create schema siasisten;
+
+set search_path to siasisten;
+
+create table mata_kuliah(
+kode char(10) primary key,
+nama varchar(100) not null,
+prasyarat char(10),
+foreign key (prasyarat) references mata_kuliah(kode)
+);
+
+create table term(
+tahun integer,
+semester integer,
+primary key (tahun, semester)
+);
+
+create table kelas_mk(
+idkelasmk integer primary key,
+tahun integer not null,
+semester integer not null,
+kode_mk integer not null,
+foreign key (tahun) references term (tahun),
+foreign key (semester) references term (semester),
+foreign key (kode_mk) references mata_kuliah (kode)
+);
+
+create table dosen(
+nip varchar(20) primary key,
+nama varchar(100) not null,
+username varchar(30) not null,
+password varchar(20) not null,
+email varchar(100) not null,
+universitas varchar(100) not null,
+fakultas varchar(100) not null
+);
+
+create table mahasiswa(
+npm char(10) primary key,
+nama varchar(100) not null,
+username varchar(30) not null,
+password varchar(20) not null,
+email varchar(100) not null,
+email_aktif varchar(100),
+waktu_kosong varchar(100),
+bank varchar(100),
+norekening varchar(100),
+url_mukatab varchar(100),
+url_foto varchar(100)
+);
+
+create table telepon_mahasiswa(
+npm char(10) primary key,
+nomortelepon varchar(20) not null
+);
+
+create table mhs_mengambil_kelas_mk(
+npm char(10),
+idkelasmk integer,
+nilai numeric(5,2),
+primary key (npm, idkelasmk),
+foreign key (npm) references mahasiswa(npm),
+foreign key (idkelasmk) references kelas_mk(id)
+);
+
+create table dosen_kelas_mk(
+nip varchar(20),
+idkelasmk integer,
+primary key (nip, idkelasmk),
+foreign key (nip) references dosen(nip),
+foreign key (idkelasmk) references kelas_mk(id)
+);
+
+create table lowongan(
+idlowongan integer primary key,
+idkelasmk integer not null,
+kodemk char(10) not null,
+status boolean not null default false,
+jumlah_asisten integer not null default 0,
+syarat_tambahan varchar(100),
+nipdosenpembuka varchar(20),
+foreign key (idkelasmk) references kelas_mk(id),
+foreign key (kodemk) references kelas_mk(kodemk),
+foreign key (nipdosenpembuka) references dosen(nip)
+);
+
+create table status_lamaran(
+id integer primary key,
+status varchar(10) not null
+);
+
+create table lamaran(
+idlamaran integer,
+npm char(10),
+idlowongan integer,
+id_st_lamaran integer not null,
+ipk numeric(5,2) not null,
+jumlahsks integer not null,
+nip varchar(20),
+primary key(idlamaran, npm),
+foreign key (npm) references mahasiswa(npm),
+foreign key (idlowongan) references lowongan(idlowongan),
+foreign key (id_st_lamaran) references status_lamaran(id),
+foreign key (nip) references dosen(nip),
+);
+
+create table status_log(
+id integer primary key,
+status varchar(10) not null,
+);
+
+create table kategori_log(
+id integer primary key,
+kategori varchar(50) not null
+);
+
+create table log(
+idlog integer primary key,
+idlamaran integer not null,
+npm char(10) not null,
+id_kat_log integer not null,
+id_st_log integer not null,
+tanggal timestamp not null,
+jam_mulai timestamp not null,
+jam_selesai timestamp not null,
+deskripsi_kerja varchar(100) not null,
+foreign key (idlamaran) references lamaran(idlamaran),
+foreign key (npm) references mahasiswa(npm),
+foreign key (id_kat_log) references kategori_log(id),
+foreign key (id_st_log) references status_log(id),
+);
